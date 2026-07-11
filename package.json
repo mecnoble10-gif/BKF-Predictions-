@@ -1,0 +1,12 @@
+{
+  "name": "bkf-predictions",
+  "version": "1.0.0",
+  "description": "Tableau de bord de prédictions IA",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
