@@ -1,0 +1,86 @@
+[
+  {
+    "id": "FREE-01",
+    "badgeIcon": "fa-gift",
+    "badgeLabel": "Cadeau du jour",
+    "eventsCount": 3,
+    "competitions": "Premier League, La Liga",
+    "fiability": "82%",
+    "odds": "2.45",
+    "price": "Gratuit",
+    "endTime": "Aujourd'hui, 19:30",
+    "matches": [
+      { "teams": "Arsenal vs Chelsea", "prediction": "Victoire Arsenal", "odd": "1.75" },
+      { "teams": "Real Madrid vs Séville", "prediction": "+1.5 buts", "odd": "1.20" },
+      { "teams": "Juventus vs Roma", "prediction": "1X (Juve ou Nul)", "odd": "1.16" }
+    ]
+  },
+  {
+    "id": "FREE-02",
+    "badgeIcon": "fa-bolt",
+    "badgeLabel": "Safe Bet",
+    "eventsCount": 2,
+    "competitions": "Ligue 1",
+    "fiability": "88%",
+    "odds": "1.85",
+    "price": "Gratuit",
+    "endTime": "Ce soir, 20:45",
+    "matches": [
+      { "teams": "PSG vs Marseille", "prediction": "Victoire PSG", "odd": "1.50" },
+      { "teams": "Lyon vs Lille", "prediction": "Les deux marquent", "odd": "1.23" }
+    ]
+  },
+  {
+    "id": "FREE-03",
+    "badgeIcon": "fa-fire",
+    "badgeLabel": "Fun Bet",
+    "eventsCount": 4,
+    "competitions": "Multi-Ligues",
+    "fiability": "75%",
+    "odds": "5.10",
+    "price": "Gratuit",
+    "endTime": "Demain, 15:00",
+    "matches": [
+      { "teams": "Bayern vs Dortmund", "prediction": "+2.5 buts", "odd": "1.45" },
+      { "teams": "Man City vs Liverpool", "prediction": "Victoire City", "odd": "1.90" },
+      { "teams": "Barcelone vs Betis", "prediction": "Victoire Barça", "odd": "1.35" },
+      { "teams": "Inter vs AC Milan", "prediction": "+1.5 buts", "odd": "1.37" }
+    ]
+  },
+  {
+    "id": "PREM-01",
+    "badgeIcon": "fa-gem",
+    "badgeLabel": "Fiabilité Max",
+    "eventsCount": 2,
+    "competitions": "Ligue des Champions",
+    "fiability": "95%",
+    "odds": "2.05",
+    "price": "2 000 FCFA",
+    "endTime": "Aujourd'hui, 21:00",
+    "matches": []
+  },
+  {
+    "id": "PREM-02",
+    "badgeIcon": "fa-crown",
+    "badgeLabel": "VIP Elite",
+    "eventsCount": 3,
+    "competitions": "Europa League",
+    "fiability": "92%",
+    "odds": "4.50",
+    "price": "5 000 FCFA",
+    "endTime": "Demain, 18:45",
+    "matches": []
+  },
+  {
+    "id": "PREM-03",
+    "badgeIcon": "fa-rocket",
+    "badgeLabel": "Montante IA",
+    "eventsCount": 5,
+    "competitions": "Multi-Ligues",
+    "fiability": "90%",
+    "odds": "12.80",
+    "price": "10 000 FCFA",
+    "endTime": "Samedi, 14:00",
+    "matches": []
+  }
+]

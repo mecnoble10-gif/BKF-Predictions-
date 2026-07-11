@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BKF Predictions - AI Live Analytics Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-body: #0f172a;      
+            --bg-sidebar: #1e2530;   
+            --bg-card: #1e293b;      
+            --text-main: #f8fafc;
+            --text-muted: #627285;   
+            --text-links: #94a3b8;   
+            --accent-blue: #2563eb;  
+            --accent-gold: #fbbf24;  
+            --accent-green: #10b981; 
+            
+            --color-1: #3b82f6; 
+            --color-n: #cbd5e1; 
+            --color-2: #ef4444; 
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-body); color: var(--text-main); display: flex; min-height: 100vh; width: 100%; overflow-x: hidden; }
+
+        button, input, select, textarea {
+            font-family: inherit;
+        }
+
+        /* --- SIDEBAR & HEADER --- */
+        .mobile-header {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 70px;
+            background-color: var(--bg-sidebar); border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            align-items: center; padding: 0 20px; z-index: 999; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .burger-btn { background: none; border: none; cursor: pointer; display: flex; flex-direction: column; gap: 5px; padding: 10px; }
+        .burger-btn span { width: 24px; height: 2px; background-color: var(--text-main); border-radius: 2px; }
+        .mobile-logo { margin-left: 15px; font-size: 1.3em; font-weight: 700; text-decoration: none; color: var(--text-main); }
+        .mobile-logo span { color: var(--accent-blue); }
+
+        .sidebar {
+            width: 260px; flex-shrink: 0; background-color: var(--bg-sidebar); border-right: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; left: 0; z-index: 1000;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .sidebar-brand { padding: 24px 20px; font-size: 1.3em; font-weight: 700; border-bottom: 1px solid rgba(255, 255, 255, 0.05); display: flex; align-items: center; gap: 10px; }
+        .sidebar-brand span { color: var(--accent-blue); }
+        .brand-icon { width: 32px; height: 32px; background: var(--text-main); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.6em; color: var(--bg-body); font-weight: 700; }
+
+        .sidebar-menu { list-style: none; padding: 15px; overflow-y: auto; flex: 1; }
+        .menu-category { font-size: 0.7em; font-weight: 600; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1.5px; margin: 24px 0 8px 10px; }
+        .menu-item { margin-bottom: 4px; }
+        .menu-link { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; color: var(--text-links); text-decoration: none; font-size: 0.9em; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+        .menu-link:hover, .menu-item.active .menu-link { color: var(--text-main); background-color: rgba(255, 255, 255, 0.02); }
+        .menu-item.active .menu-link { background-color: var(--accent-blue); color: white; }
+        
+        .menu-item.active .menu-link .link-content i { color: #ffffff !important; }
+        
+        .link-content { display: flex; align-items: center; gap: 12px; }
+        .link-content i { font-size: 1.1em; width: 24px; text-align: center; }
+        
+        .league-flag-wrapper {
+            font-size: 1.2em;
+            width: 24px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- MAIN CONTENT & FILTERS --- */
+        .main-content { flex: 1; margin-left: 260px; padding: 30px; max-width: 100%; width: 100%; overflow-x: hidden; }
+        .page-title-block { margin-bottom: 20px; }
+        .page-title-block h1 { font-size: 1.8em; font-weight: 700; line-height: 1.2; margin-bottom: 5px; }
+        #sync-status { font-size: 0.85em; color: var(--accent-gold); font-weight: 500; display: flex; align-items: center; gap: 6px; }
+        
+        .filter-bar { display: flex; gap: 10px; margin-bottom: 25px; overflow-x: auto; padding-bottom: 10px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .filter-bar::-webkit-scrollbar { display: none; }
+        
+        .filter-btn {
+            font-family: 'Poppins', sans-serif;
+            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--text-links); padding: 8px 16px; border-radius: 20px; font-size: 0.85em;
+            font-weight: 500; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; flex-shrink: 0;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .filter-btn:hover, .filter-btn.active { background: var(--accent-blue); color: white; border-color: var(--accent-blue); }
+
+        /* --- MATCH CARDS --- */
+        .status-badge { padding: 3px 8px; border-radius: 4px; font-size: 0.75em; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; margin-right: 8px; }
+        .badge-live { background-color: var(--color-2); color: white; animation: pulse 1.5s infinite; }
+        .badge-upcoming { background-color: rgba(255,255,255,0.1); color: var(--text-links); }
+        .badge-finished { background-color: var(--text-muted); color: white; }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        .match-card {
+            background: var(--bg-card); border-radius: 16px; padding: 25px; margin-bottom: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.04);
+            width: 100%;
+        }
+
+        .match-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 15px; margin-bottom: 20px; }
+        .teams-container { display: flex; align-items: center; justify-content: center; gap: 15px; font-size: 1.2em; font-weight: 600; width: 100%; }
+        .team-block { display: flex; align-items: center; gap: 10px; flex: 1; }
+        .team-block.left { justify-content: flex-end; text-align: right; }
+        .team-block.right { justify-content: flex-start; text-align: left; }
+        .club-logo { width: 32px; height: 32px; object-fit: contain; flex-shrink: 0; }
+        
+        .live-score-display {
+            background: #0f172a; padding: 8px 16px; border-radius: 6px; color: var(--accent-gold);
+            font-family: monospace; font-size: 1.3em; letter-spacing: 2px; font-weight: 700; flex-shrink: 0;
+        }
+
+        .league-info { font-size: 0.75em; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; text-align: right; min-width: 100px;}
+        .date { display: block; color: var(--text-main); font-weight: 500; margin-top: 3px; display: flex; align-items: center; justify-content: flex-end; gap: 5px; }
+        
+        .section-title { font-size: 0.8em; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .stats-container { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 20px; }
+
+        .stat-box { flex: 1; background: rgba(255, 255, 255, 0.02); padding: 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.03); }
+        .stat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .detail-label, .stat-label { font-size: 0.8em; color: #94a3b8; }
+        .detail-value, .stat-value { font-size: 1em; font-weight: 700; }
+
+        .finished-details-box {
+            background: rgba(16, 185, 129, 0.05); border: 1px dashed rgba(16, 185, 129, 0.3);
+            border-radius: 12px; padding: 15px; margin-bottom: 20px;
+        }
+        .detail-row { display: flex; justify-content: space-between; font-size: 0.9em; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-label { color: var(--text-links); }
+        .detail-value { font-weight: 600; color: var(--accent-green); }
+
+        .progress-bar { height: 4px; width: 100%; background-color: rgba(255, 255, 255, 0.05); border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 4px; }
+
+        .ai-box { margin-bottom:20px; font-size:0.9em; background:rgba(139, 92, 246, 0.1); padding:12px 15px; border-radius:8px; border:1px solid rgba(139, 92, 246, 0.2); }
+        .ai-box-header { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; font-weight: 600; }
+        .ai-badge { background: #8b5cf6; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.8em; font-weight: 600; margin-top: 5px; display: inline-block;}
+
+        .analysis { background: rgba(0, 0, 0, 0.15); padding: 15px; border-radius: 12px; margin-bottom: 20px; border-left: 3px solid var(--accent-gold); }
+        .analysis strong { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; font-size: 0.9em;}
+        .analysis-text { font-size: 0.9em; color: #94a3b8; line-height: 1.6; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .analysis.expanded .analysis-text { display: block; overflow: visible; -webkit-line-clamp: unset; }
+        .see-more-btn { display: inline-block; color: var(--accent-gold); font-size: 0.85em; font-weight: 500; cursor: pointer; margin-top: 8px; text-decoration: underline; }
+
+        .prediction { background: linear-gradient(135deg, var(--accent-green) 0%, #059669 100%); color: white; padding: 12px; border-radius: 8px; text-align: center; font-weight: 600; font-size: 0.95em; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.6); z-index: 998; backdrop-filter: blur(2px); }
+
+        .loader { text-align: center; padding: 40px 20px; color: var(--text-links); font-size: 1em; line-height: 1.5; display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        .loader i { font-size: 2em; color: var(--accent-blue); }
+
+        @media (max-width: 1200px) {
+            body { flex-direction: column; }
+            .mobile-header { display: flex; }
+            .sidebar { transform: translateX(-100%); width: 280px; }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar-overlay.show { display: block; }
+            
+            .main-content { margin-left: 0; padding: 90px 15px 30px 15px; width: 100%; }
+            .page-title-block h1 { font-size: 1.4em; }
+            
+            .match-header { flex-direction: column; align-items: center; text-align: center; gap: 15px; }
+            .league-info { text-align: center; width: 100%; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px; }
+            .date { justify-content: center; }
+            
+            .teams-container { flex-direction: column; gap: 12px; }
+            .team-block { width: 100%; justify-content: center !important; text-align: center !important; }
+            .team-block.left { flex-direction: row-reverse; }
+            
+            .stats-container { flex-direction: column; gap: 10px; }
+            .stat-box { width: 100%; }
+            .finished-details-box { padding: 12px; }
+            .match-card { padding: 20px 15px; border-radius: 12px; }
+        }
+    </style>
+    <script src="https://unpkg.com/brain.js"></script>
+</head>
+<body>
+
+    <div class="mobile-header">
+        <button class="burger-btn" id="burgerToggle"><span></span><span></span><span></span></button>
+        <a href="#" class="mobile-logo">BKF <span>Predictions</span></a>
+    </div>
+    <div class="sidebar-overlay" id="menuOverlay"></div>
+
+    <nav class="sidebar" id="sidebarMenu">
+        <div class="sidebar-brand"><div class="brand-icon">BP</div>BKF <span>Predictions</span></div>
+        <ul class="sidebar-menu">
+            <div class="menu-category">Ligues de l'Élite</div>
+            <li class="menu-item active" onclick="filterLeagueSidebar(event, 'ALL')">
+                <a class="menu-link">
+                    <div class="link-content">
+                        <i class="fa-solid fa-star" style="color: var(--accent-gold);"></i>
+                        <span>Tous (Élite Uniquement)</span>
+                    </div>
+                </a>
+            </li>
+            <li class="menu-item" onclick="filterLeagueSidebar(event, 'WC')">
+                <a class="menu-link">
+                    <div class="link-content">
+                        <i class="fa-solid fa-globe" style="color: #60a5fa;"></i>
+                        <span>Coupe du Monde</span>
+                    </div>
+                </a>
+            </li>
+            <li class="menu-item" onclick="filterLeagueSidebar(event, 'PL')">
+                <a class="menu-link"><div class="link-content">
+                    <div class="league-flag-wrapper">🏴󠁧󠁢󠁥󠁮󠁧󠁿</div>
+                    <span>Premier League</span>
+                </div></a>
+            </li>
+            <li class="menu-item" onclick="filterLeagueSidebar(event, 'PD')">
+                <a class="menu-link"><div class="link-content">
+                    <div class="league-flag-wrapper">🇪🇸</div>
+                    <span>La Liga</span>
+                </div></a>
+            </li>
+            <li class="menu-item" onclick="filterLeagueSidebar(event, 'SA')">
+                <a class="menu-link"><div class="link-content">
+                    <div class="league-flag-wrapper">🇮🇹</div>
+                    <span>Serie A</span>
+                </div></a>
+            </li>
+            <li class="menu-item" onclick="filterLeagueSidebar(event, 'BL1')">
+                <a class="menu-link"><div class="link-content">
+                    <div class="league-flag-wrapper">🇩🇪</div>
+                    <span>Bundesliga</span>
+                </div></a>
+            </li>
+            <li class="menu-item" onclick="filterLeagueSidebar(event, 'FL1')">
+                <a class="menu-link"><div class="link-content">
+                    <div class="league-flag-wrapper">🇫🇷</div>
+                    <span>Ligue 1</span>
+                </div></a>
+            </li>
+            
+            <div class="menu-category">Reste du Monde</div>
+            <li class="menu-item" onclick="filterLeagueSidebar(event, 'OTHER')">
+                <a class="menu-link"><div class="link-content"><i class="fa-solid fa-earth-americas" style="color: var(--text-links);"></i><span>Autres Ligues</span></div></a>
+            </li>
+            
+            <div class="menu-category">Espace Privé</div>
+            <li class="menu-item">
+                <a href="coupon.html" class="menu-link">
+                    <div class="link-content">
+                        <i class="fa-solid fa-ticket" style="color: var(--accent-gold);"></i>
+                        <span>Mon Coupon</span>
+                    </div>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        <div class="page-title-block">
+            <h1>Multi-Ligues Live Analytics</h1>
+            <p id="sync-status"><i class="fa-solid fa-satellite-dish fa-fade"></i> Connexion au flux de données...</p>
+        </div>
+
+        <div class="filter-bar">
+            <button class="filter-btn active" onclick="filterStatus(event, 'LIVE')">
+                <i class="fa-solid fa-circle" style="color: var(--color-2); font-size: 0.8em;"></i> Matchs en direct
+            </button>
+            <button class="filter-btn" onclick="filterStatus(event, 'UPCOMING')">
+                <i class="fa-regular fa-calendar-days"></i> Matchs à venir
+            </button>
+            <button class="filter-btn" onclick="filterStatus(event, 'FINISHED')">
+                <i class="fa-solid fa-check-double"></i> Matchs terminés
+            </button>
+        </div>
+
+        <div id="live-matches-container">
+            <div class="loader">
+                <i class="fa-regular fa-futbol fa-spin"></i>
+                <span>Synchronisation sécurisée des données...</span>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API_KEY = "f5b3e14a7e3f402db592ee5baafabb7f"; 
+        const ELITE_LEAGUES = ["WC", "PL", "PD", "SA", "BL1", "FL1", "CL", "EC"];
+        
+        let allMatchesData = []; 
+        let currentLeagueFilter = "ALL";
+        let currentStatusFilter = "LIVE"; 
+        let net;
+
+        function trainAI() {
+            net = new brain.NeuralNetwork({ hiddenLayers: [5, 5] });
+            net.train([
+                { input: { homeStrength: 0.88, awayStrength: 0.50, liveScoreDiff: 0.5 }, output: { p1: 0.72, pN: 0.18, p2: 0.10, over: 0.75 } },
+                { input: { homeStrength: 0.50, awayStrength: 0.88, liveScoreDiff: 0.5 }, output: { p1: 0.11, pN: 0.19, p2: 0.70, over: 0.72 } },
+                { input: { homeStrength: 0.85, awayStrength: 0.82, liveScoreDiff: 0.5 }, output: { p1: 0.44, pN: 0.31, p2: 0.25, over: 0.55 } },
+                { input: { homeStrength: 0.52, awayStrength: 0.50, liveScoreDiff: 0.5 }, output: { p1: 0.39, pN: 0.33, p2: 0.28, over: 0.42 } },
+                { input: { homeStrength: 0.60, awayStrength: 0.60, liveScoreDiff: 0.6 }, output: { p1: 0.76, pN: 0.18, p2: 0.06, over: 0.68 } },
+                { input: { homeStrength: 0.60, awayStrength: 0.60, liveScoreDiff: 0.3 }, output: { p1: 0.05, pN: 0.15, p2: 0.80, over: 0.70 } }
+            ]);
+        }
+
+        function getAnalyticalStrength(name) {
+            if(!name) return 0.50;
+            const n = name.toLowerCase();
+            
+            const database = {
+                "argentina": 0.92, "france": 0.90, "brazil": 0.89, "england": 0.88,
+                "spain": 0.89, "portugal": 0.86, "netherlands": 0.84, "italy": 0.83,
+                "germany": 0.85, "belgium": 0.80, "morocco": 0.79, "croatia": 0.81,
+                "manchester city": 0.93, "man city": 0.93, "arsenal": 0.89, "liverpool": 0.90, "chelsea": 0.79, "manchester united": 0.78,
+                "real madrid": 0.94, "barcelona": 0.91, "atletico": 0.86, "athletic": 0.81,
+                "juventus": 0.85, "inter": 0.88, "ac milan": 0.85, "napoli": 0.84, "roma": 0.81,
+                "bayern": 0.91, "leverkusen": 0.87, "dortmund": 0.83, "leipzig": 0.82,
+                "paris saint-germain": 0.88, "psg": 0.88, "monaco": 0.79, "marseille": 0.77, "lille": 0.76
+            };
+
+            for (let key in database) {
+                if (n.includes(key)) return database[key];
+            }
+
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) hash += name.charCodeAt(i);
+            return 0.48 + ((hash % 11) / 100); 
+        }
+
+        async function initDashboard() {
+            try {
+                if (!net) trainAI();
+
+                const container = document.getElementById('live-matches-container');
+                if (allMatchesData.length === 0 && container) {
+                    container.innerHTML = `
+                        <div class="loader">
+                            <i class="fa-regular fa-futbol fa-spin"></i>
+                            <span>Synchronisation sécurisée des données...</span>
+                        </div>`;
+                }
+
+                const today = new Date();
+                const formatStr = d => d.toISOString().split('T')[0];
+                let matchesList = [];
+                
+                const intervals = [
+                    { from: -3, to: 6 },
+                    { from: 7, to: 16 },
+                    { from: 17, to: 26 }
+                ];
+
+                for (const interval of intervals) {
+                    let dateFrom = new Date();
+                    dateFrom.setDate(today.getDate() + interval.from);
+                    let dateTo = new Date();
+                    dateTo.setDate(today.getDate() + interval.to);
+                    
+                    const cacheBuster = Date.now();
+                    const targetUrl = `https://api.football-data.org/v4/matches?dateFrom=${formatStr(dateFrom)}&dateTo=${formatStr(dateTo)}&_t=${cacheBuster}`;
+                    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+                    
+                    const response = await fetch(proxyUrl, { headers: { "X-Auth-Token": API_KEY } });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.matches) {
+                            matchesList = matchesList.concat(data.matches);
+                        }
+                    } else {
+                        console.warn(`Erreur API segmentée (${interval.from} à ${interval.to}): Status ${response.status}`);
+                    }
+                }
+
+                const cleanMatchesList = matchesList.filter(m => 
+                    m.homeTeam && m.homeTeam.name && m.awayTeam && m.awayTeam.name
+                );
+
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                const syncStatus = document.getElementById('sync-status');
+                if (syncStatus) {
+                    syncStatus.innerHTML = `<i class="fa-solid fa-check-circle"></i> Flux global connecté • À jour à ${timeString}`;
+                    syncStatus.style.color = "var(--accent-green)";
+                }
+
+                if(cleanMatchesList.length > 0) {
+                    allMatchesData = cleanMatchesList.map(m => {
+                        const isLive = m.status === "IN_PLAY" || m.status === "PAUSED";
+                        
+                        const s1 = m.score?.fullTime?.home ?? m.score?.regularTime?.home ?? m.score?.halfTime?.home ?? 0;
+                        const s2 = m.score?.fullTime?.away ?? m.score?.regularTime?.away ?? m.score?.halfTime?.away ?? 0;
+
+                        const homeStr = getAnalyticalStrength(m.homeTeam.name);
+                        const awayStr = getAnalyticalStrength(m.awayTeam.name);
+                        
+                        let liveScoreDiff = 0.5;
+                        if(isLive) {
+                            let diff = s1 - s2;
+                            liveScoreDiff = 0.5 + (diff * 0.12);
+                            liveScoreDiff = Math.max(0.1, Math.min(0.9, liveScoreDiff)); 
+                        }
+
+                        const aiOutputs = net.run({ 
+                            homeStrength: homeStr, 
+                            awayStrength: awayStr, 
+                            liveScoreDiff: liveScoreDiff 
+                        });
+
+                        const totalProb = aiOutputs.p1 + aiOutputs.pN + aiOutputs.p2;
+                        const p1 = Math.round((aiOutputs.p1 / totalProb) * 100);
+                        const p2 = Math.round((aiOutputs.p2 / totalProb) * 100);
+                        const pN = 100 - (p1 + p2); 
+
+                        const totalGoalsPredict = (aiOutputs.over > 0.52) ? "+2.5 buts attendus" : "-2.5 buts attendus";
+                        const aiConfidence = Math.round(aiOutputs.over * 100);
+
+                        const matchDate = new Date(m.utcDate);
+                        const formattedTime = matchDate.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+
+                        let dynamicAnalysis = `Analyse basée sur les indices de puissance. Indice interne calculé : ${m.homeTeam.name} (${Math.round(homeStr*100)}/100) face à ${m.awayTeam.name} (${Math.round(awayStr*100)}/100). Le modèle neuronal a croisé ces forces avec le contexte terrain actuel.`;
+
+                        return {
+                            id: m.id,
+                            leagueCode: m.competition.code,
+                            leagueName: m.competition.name,
+                            status: isLive ? "LIVE" : (m.status === "FINISHED" ? "FINISHED" : "UPCOMING"),
+                            time: isLive ? "Direct" : formattedTime,
+                            t1: m.homeTeam.name, l1: m.homeTeam.crest,
+                            t2: m.awayTeam.name, l2: m.awayTeam.crest,
+                            s1: s1, s2: s2,
+                            ht1: m.score?.halfTime?.home ?? 0, ht2: m.score?.halfTime?.away ?? 0,
+                            p1: p1, pN: pN, p2: p2,
+                            totalGoalsPredict: totalGoalsPredict,
+                            aiConfidence: aiConfidence,
+                            analysisText: dynamicAnalysis
+                        };
+                    });
+                    
+                    renderDashboard();
+                } else {
+                    if (container) {
+                        container.innerHTML = `
+                            <div class='loader'>
+                                <i class='fa-solid fa-calendar-xmark' style='color: var(--text-muted);'></i>
+                                <span>Aucun match enregistré sur cette période.</span>
+                            </div>`;
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+                const syncStatus = document.getElementById('sync-status');
+                if (syncStatus) {
+                    syncStatus.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Reconnexion au serveur dans 1 min...`;
+                    syncStatus.style.color = "var(--color-2)";
+                }
+            }
+        }
+
+        function renderDashboard() {
+            const container = document.getElementById('live-matches-container');
+            if(!container) return;
+            container.innerHTML = "";
+
+            const filtered = allMatchesData.filter(m => {
+                let matchLeague = false;
+                if (currentLeagueFilter === "ALL") {
+                    matchLeague = ELITE_LEAGUES.includes(m.leagueCode);
+                } else if (currentLeagueFilter === "OTHER") {
+                    matchLeague = !ELITE_LEAGUES.includes(m.leagueCode);
+                } else {
+                    matchLeague = (m.leagueCode === currentLeagueFilter);
+                }
+                const matchStatus = m.status === currentStatusFilter;
+                return matchLeague && matchStatus;
+            });
+
+            if(filtered.length === 0) {
+                let emptyIcon = "<i class='fa-solid fa-folder-open'></i>";
+                let emptyMsg = "Aucun match ne correspond à cette sélection.";
+                if(currentStatusFilter === "LIVE") {
+                    emptyIcon = "<i class='fa-solid fa-tower-broadcast'></i>";
+                    emptyMsg = "Aucun match de cette catégorie n'est en direct actuellement. Consultez l'onglet 'Matchs à venir' !";
+                }
+                container.innerHTML = `<div class='loader' style='color: var(--text-muted);'>${emptyIcon}<span>${emptyMsg}</span></div>`;
+                return;
+            }
+
+            filtered.forEach(match => {
+                let badge = `<span class="status-badge badge-upcoming"><i class="fa-regular fa-clock"></i> À venir</span>`;
+                if(match.status === "LIVE") badge = `<span class="status-badge badge-live"><i class="fa-solid fa-circle" style="font-size: 0.6em;"></i> LIVE</span>`;
+                if(match.status === "FINISHED") badge = `<span class="status-badge badge-finished"><i class="fa-solid fa-check"></i> Terminé</span>`;
+
+                let dynamicContent = "";
+                if (match.status === "FINISHED") {
+                    dynamicContent = `
+                        <div class="section-title"><i class="fa-solid fa-chart-pie"></i> Fiche Technique Fin de Match</div>
+                        <div class="finished-details-box">
+                            <div class="detail-row">
+                                <span class="detail-label">Score Mi-temps</span>
+                                <span class="detail-value" style="color:var(--text-main);">${match.ht1} - ${match.ht2}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Total de buts marqués</span>
+                                <span class="detail-value">${match.s1 + match.s2}</span>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    dynamicContent = `
+                        <div class="section-title"><i class="fa-solid fa-scale-balanced"></i> Probabilités 1X2 basées sur l'IA</div>
+                        <div class="stats-container">
+                            <div class="stat-box">
+                                <div class="stat-header"><span class="stat-label">1</span><span class="stat-value">${match.p1}%</span></div>
+                                <div class="progress-bar"><div class="progress-fill" style="width: ${match.p1}%; background: var(--color-1);"></div></div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-header"><span class="stat-label">N</span><span class="stat-value">${match.pN}%</span></div>
+                                <div class="progress-bar"><div class="progress-fill" style="width: ${match.pN}%; background: var(--color-n);"></div></div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-header"><span class="stat-label">2</span><span class="stat-value">${match.p2}%</span></div>
+                                <div class="progress-bar"><div class="progress-fill" style="width: ${match.p2}%; background: var(--color-2);"></div></div>
+                            </div>
+                        </div>
+                        <div class="ai-box">
+                            <div class="ai-box-header"><i class="fa-solid fa-microchip" style="color: #8b5cf6;"></i> Moteur de Prédiction Neuronal</div>
+                            <span class="ai-badge">${match.totalGoalsPredict}</span>
+                            <span style="float:right; font-weight:600; font-size: 0.9em; margin-top: 6px;">Indice Fiabilité : ${match.aiConfidence}%</span>
+                        </div>
+                        <div class="analysis" id="analysis-${match.id}">
+                            <strong><i class="fa-solid fa-magnifying-glass-chart" style="color: var(--accent-gold);"></i> Lecture Analytique</strong>
+                            <p class="analysis-text">${match.analysisText}</p>
+                            <span class="see-more-btn" onclick="toggleAnalysis(${match.id})">Lire l'analyse complète</span>
+                        </div>
+                        <div class="prediction">
+                            <i class="fa-regular fa-lightbulb"></i> Tendance IA : ${match.p1 > match.p2 && match.p1 > match.pN ? `Victoire attendue de ${match.t1}` : (match.p2 > match.p1 && match.p2 > match.pN ? `Victoire attendue de ${match.t2}` : 'Équilibre tactique / Option Match Nul')}
+                        </div>
+                    `;
+                }
+
+                const cardHTML = `
+                    <div class="match-card">
+                        <div class="match-header">
+                            <div>${badge}</div>
+                            <div class="teams-container">
+                                <div class="team-block left">
+                                    <span>${match.t1}</span>
+                                    <img src="${match.l1 || 'https://via.placeholder.com/32?text=?'}" class="club-logo" alt="Logo" onerror="this.src='https://via.placeholder.com/32?text=?'">
+                                </div>
+                                <div class="live-score-display">${match.s1} - ${match.s2}</div>
+                                <div class="team-block right">
+                                    <img src="${match.l2 || 'https://via.placeholder.com/32?text=?'}" class="club-logo" alt="Logo" onerror="this.src='https://via.placeholder.com/32?text=?'">
+                                    <span>${match.t2}</span>
+                                </div>
+                            </div>
+                            <div class="league-info">
+                                <span>${match.leagueName}</span>
+                                <span class="date"><i class="fa-regular fa-clock" style="font-size: 0.8em;"></i> ${match.time}</span>
+                            </div>
+                        </div>
+                        ${dynamicContent}
+                    </div>
+                `;
+                container.innerHTML += cardHTML;
+            });
+        }
+
+        function filterLeagueSidebar(e, code) {
+            currentLeagueFilter = code;
+            document.querySelectorAll('.sidebar-menu .menu-item').forEach(item => item.classList.remove('active'));
+            e.currentTarget.classList.add('active');
+            document.getElementById('sidebarMenu').classList.remove('open');
+            document.getElementById('menuOverlay').classList.remove('show');
+            renderDashboard();
+        }
+
+        function filterStatus(e, status) {
+            currentStatusFilter = status;
+            document.querySelectorAll('.filter-bar .filter-btn').forEach(btn => btn.classList.remove('active'));
+            e.currentTarget.classList.add('active');
+            renderDashboard();
+        }
+
+        function toggleAnalysis(id) {
+            const el = document.getElementById(`analysis-${id}`);
+            el.classList.toggle('expanded');
+            const btn = el.querySelector('.see-more-btn');
+            btn.innerText = el.classList.contains('expanded') ? "Réduire l'analyse" : "Lire l'analyse complète";
+        }
+
+        const burgerBtn = document.getElementById('burgerToggle');
+        const sidebar = document.getElementById('sidebarMenu');
+        const overlay = document.getElementById('menuOverlay');
+
+        burgerBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+        });
+
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('show');
+        });
+
+        window.onload = () => {
+            initDashboard();
+            setInterval(initDashboard, 60000); 
+        };
+    </script>
+</body>
+</html>
