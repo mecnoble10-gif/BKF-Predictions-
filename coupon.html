@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mon Coupon - BKF Predictions</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="coupons.js"></script>
+    
+    <style>
+        :root {
+            --bg-body: #0f172a;      
+            --bg-sidebar: #1e2530;   
+            --bg-card: #1e293b;      
+            --text-main: #f8fafc;
+            --text-muted: #627285;   
+            --text-links: #94a3b8;   
+            --accent-blue: #2563eb;  
+            --accent-gold: #fbbf24;  
+            --accent-green: #10b981; 
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-body); color: var(--text-main); display: flex; min-height: 100vh; width: 100%; overflow-x: hidden; }
+
+        button { font-family: 'Poppins', sans-serif !important; }
+
+        /* --- SIDEBAR & HEADER --- */
+        .mobile-header {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 70px;
+            background-color: var(--bg-sidebar); border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            align-items: center; padding: 0 20px; z-index: 999; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .burger-btn { background: none; border: none; cursor: pointer; display: flex; flex-direction: column; gap: 5px; padding: 10px; }
+        .burger-btn span { width: 24px; height: 2px; background-color: var(--text-main); border-radius: 2px; }
+        .mobile-logo { margin-left: 15px; font-size: 1.3em; font-weight: 700; text-decoration: none; color: var(--text-main); }
+        .mobile-logo span { color: var(--accent-blue); }
+
+        .sidebar {
+            width: 260px; flex-shrink: 0; background-color: var(--bg-sidebar); border-right: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; left: 0; z-index: 1000;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .sidebar-brand { padding: 24px 20px; font-size: 1.3em; font-weight: 700; border-bottom: 1px solid rgba(255, 255, 255, 0.05); display: flex; align-items: center; gap: 10px; }
+        .sidebar-brand span { color: var(--accent-blue); }
+        .brand-icon { width: 32px; height: 32px; background: var(--text-main); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.6em; color: var(--bg-body); font-weight: 700; }
+
+        .sidebar-menu { list-style: none; padding: 15px; overflow-y: auto; flex: 1; }
+        .menu-category { font-size: 0.7em; font-weight: 600; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1.5px; margin: 24px 0 8px 10px; }
+        .menu-item { margin-bottom: 4px; }
+        .menu-link { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; color: var(--text-links); text-decoration: none; font-size: 0.9em; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+        .menu-link:hover, .menu-item.active .menu-link { color: var(--text-main); background-color: rgba(255, 255, 255, 0.02); }
+        .menu-item.active .menu-link { background-color: var(--accent-blue); color: white; }
+        
+        .menu-item.active .menu-link .link-content i { color: #ffffff !important; }
+        .link-content { display: flex; align-items: center; gap: 12px; }
+        .link-content i { font-size: 1.1em; width: 24px; text-align: center; }
+        .league-flag-wrapper { font-size: 1.2em; width: 24px; display: inline-flex; justify-content: center; align-items: center; }
+
+        /* --- MAIN CONTENT --- */
+        .main-content { flex: 1; margin-left: 260px; padding: 30px; max-width: 100%; width: 100%; overflow-x: hidden; }
+        .page-title-block { margin-bottom: 25px; }
+        .page-title-block h1 { font-size: 1.8em; font-weight: 700; line-height: 1.2; margin-bottom: 5px; }
+        .page-subtitle { font-size: 0.9em; color: var(--text-links); }
+
+        /* --- COUPONS GRID --- */
+        .coupons-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; width: 100%; }
+        .loader { text-align: center; padding: 50px; font-size: 1.2em; color: var(--text-links); grid-column: 1 / -1; }
+        .loader i { margin-bottom: 10px; font-size: 2em; color: var(--accent-blue); }
+
+        /* --- COUPON CARD --- */
+        .coupon-card {
+            background: var(--bg-card); border-radius: 16px; padding: 22px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.04);
+            position: relative; overflow: hidden; transition: transform 0.2s, border-color 0.2s;
+        }
+        .coupon-card:hover { transform: translateY(-2px); border-color: rgba(37, 99, 235, 0.3); }
+        .coupon-card::before, .coupon-card::after { content: ''; position: absolute; top: 50%; width: 14px; height: 14px; background: var(--bg-body); border-radius: 50%; transform: translateY(-50%); }
+        .coupon-card::before { left: -7px; } .coupon-card::after { right: -7px; }
+
+        .coupon-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(255, 255, 255, 0.1); padding-bottom: 12px; margin-bottom: 15px; }
+        .coupon-id { font-size: 0.8em; font-weight: 700; color: var(--accent-blue); background: rgba(37, 99, 235, 0.1); padding: 4px 8px; border-radius: 6px; text-transform: uppercase; }
+        .coupon-badge-top { font-size: 0.75em; font-weight: 600; color: var(--accent-gold); display: flex; align-items: center; gap: 5px; }
+
+        .coupon-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 0.9em; }
+        .coupon-label { color: var(--text-links); display: flex; align-items: center; gap: 8px; }
+        .coupon-label i { width: 16px; text-align: center; font-size: 0.95em; }
+        .coupon-value { font-weight: 600; color: var(--text-main); text-align: right; max-width: 65%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        
+        .value-events { background: rgba(255, 255, 255, 0.05); padding: 2px 8px; border-radius: 4px; font-size: 0.9em; }
+        .value-fiability { color: var(--accent-green); font-weight: 700; }
+        .value-odds { color: var(--accent-gold); font-weight: 700; background: rgba(251, 191, 36, 0.1); padding: 2px 8px; border-radius: 4px; }
+        .value-price { color: #f43f5e; font-weight: 700; }
+
+        .coupon-footer { margin-top: 18px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 14px; }
+        
+        .action-btn { 
+            width: 100%; background: linear-gradient(135deg, var(--accent-blue) 0%, #1e40af 100%); color: white; 
+            border: none; padding: 11px; border-radius: 8px; font-weight: 600; font-size: 0.85em; cursor: pointer; 
+            display: flex; align-items: center; justify-content: center; gap: 8px; transition: opacity 0.2s;
+            font-family: 'Poppins', sans-serif !important;
+        }
+        .action-btn.pay-btn {
+            background: linear-gradient(135deg, var(--accent-gold) 0%, #d97706 100%);
+            color: #fff;
+        }
+        .action-btn:hover { opacity: 0.9; }
+
+        /* --- POPUP (MODAL) --- */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, 0.75); backdrop-filter: blur(4px);
+            z-index: 2000; justify-content: center; align-items: center; padding: 20px;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal-box {
+            background: var(--bg-card); width: 100%; max-width: 500px; border-radius: 16px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.5); border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex; flex-direction: column; overflow: hidden; animation: animModal 0.25s ease-out;
+            font-family: 'Poppins', sans-serif !important;
+        }
+        @keyframes animModal { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        .modal-header { padding: 18px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); display: flex; justify-content: space-between; align-items: center; }
+        .modal-title { font-weight: 700; font-size: 1.1em; color: var(--text-main); }
+        .modal-close { background: none; border: none; font-size: 1.5em; color: var(--text-links); cursor: pointer; }
+        .modal-close:hover { color: var(--text-main); }
+        
+        .modal-body { padding: 20px; overflow-y: auto; max-height: 70vh; display: flex; flex-direction: column; gap: 12px; }
+        
+        .match-item-row {
+            background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 10px; padding: 12px 15px; display: flex; flex-direction: column; gap: 5px;
+        }
+        .match-teams { font-size: 0.9em; font-weight: 600; color: var(--text-main); }
+        .match-bet-container { display: flex; justify-content: space-between; align-items: center; font-size: 0.85em; margin-top: 2px; }
+        .match-prediction { color: var(--accent-gold); font-weight: 500; background: rgba(251, 191, 36, 0.08); padding: 2px 8px; border-radius: 4px; }
+        .match-odd-badge { color: var(--accent-green); font-weight: 700; }
+
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.6); z-index: 998; backdrop-filter: blur(2px); }
+
+        @media (max-width: 1200px) {
+            body { flex-direction: column; } .mobile-header { display: flex; }
+            .sidebar { transform: translateX(-100%); width: 280px; } .sidebar.open { transform: translateX(0); }
+            .sidebar-overlay.show { display: block; } .main-content { margin-left: 0; padding: 90px 15px 30px 15px; width: 100%; }
+            .coupons-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-header">
+        <button class="burger-btn" id="burgerToggle"><span></span><span></span><span></span></button>
+        <a href="#" class="mobile-logo">BKF <span>Predictions</span></a>
+    </div>
+    <div class="sidebar-overlay" id="menuOverlay"></div>
+
+    <nav class="sidebar" id="sidebarMenu">
+        <div class="sidebar-brand"><div class="brand-icon">BP</div>BKF <span>Predictions</span></div>
+        <ul class="sidebar-menu">
+            <div class="menu-category">Ligues de l'Élite</div>
+            <li class="menu-item"><a href="index.html" class="menu-link"><div class="link-content"><i class="fa-solid fa-star" style="color: var(--accent-gold);"></i><span>Tous (Élite Uniquement)</span></div></a></li>
+            <li class="menu-item"><a href="index.html" class="menu-link"><div class="link-content"><i class="fa-solid fa-globe" style="color: #60a5fa;"></i><span>Coupe du Monde</span></div></a></li>
+            <li class="menu-item"><a href="index.html" class="menu-link"><div class="link-content"><div class="league-flag-wrapper">🏴󠁧󠁢󠁥󠁮󠁧󠁿</div><span>Premier League</span></div></a></li>
+            <li class="menu-item"><a href="index.html" class="menu-link"><div class="link-content"><div class="league-flag-wrapper">🇪🇸</div><span>La Liga</span></div></a></li>
+            <li class="menu-item"><a href="index.html" class="menu-link"><div class="link-content"><div class="league-flag-wrapper">🇮🇹</div><span>Serie A</span></div></a></li>
+            <li class="menu-item"><a href="index.html" class="menu-link"><div class="link-content"><div class="league-flag-wrapper">🇩🇪</div><span>Bundesliga</span></div></a></li>
+            <li class="menu-item"><a href="index.html" class="menu-link"><div class="link-content"><div class="league-flag-wrapper">🇫🇷</div><span>Ligue 1</span></div></a></li>
+            
+            <div class="menu-category">Reste du Monde</div>
+            <li class="menu-item"><a href="index.html" class="menu-link"><div class="link-content"><i class="fa-solid fa-earth-americas" style="color: var(--text-links);"></i><span>Autres Ligues</span></div></a></li>
+            
+            <div class="menu-category">Espace Privé</div>
+            <li class="menu-item active">
+                <a href="coupon.html" class="menu-link">
+                    <div class="link-content">
+                        <i class="fa-solid fa-ticket" style="color: var(--accent-gold);"></i>
+                        <span>Mon Coupon</span>
+                    </div>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        <div class="page-title-block">
+            <h1>Vos Coupons IA</h1>
+            <p class="page-subtitle">Découvrez nos analyses gratuites et nos combinaisons premium.</p>
+        </div>
+
+        <div class="coupons-grid" id="couponsGrid">
+            <div class="loader">
+                <i class="fa-solid fa-circle-notch fa-spin"></i>
+                <p>Chargement des coupons textuels...</p>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="combinationModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div class="modal-title" id="modalTitle">Détail</div>
+                <button class="modal-close" id="closeModalBtn">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+
+    <script>
+        let globalCouponsData = [];
+
+        function loadCouponsData() {
+            // Au lieu d'utiliser fetch, on utilise la variable mesCoupons déclarée dans coupons.js
+            try {
+                globalCouponsData = mesCoupons;
+                renderCoupons(globalCouponsData);
+            } catch (error) {
+                console.error(error);
+                const grid = document.getElementById('couponsGrid');
+                grid.innerHTML = `
+                    <div class="loader" style="color:#ef4444;">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <p>Erreur : impossible de lire le fichier coupons.js.</p>
+                    </div>`;
+            }
+        }
+
+        function renderCoupons(data) {
+            const grid = document.getElementById('couponsGrid');
+            grid.innerHTML = "";
+
+            data.forEach((coupon, index) => {
+                const isFree = coupon.price.toLowerCase() === 'gratuit';
+                
+                const card = document.createElement('div');
+                card.className = 'coupon-card';
+                card.innerHTML = `
+                    <div class="coupon-header">
+                        <span class="coupon-id">${coupon.id}</span>
+                        <span class="coupon-badge-top"><i class="fa-solid ${coupon.badgeIcon}"></i> ${coupon.badgeLabel}</span>
+                    </div>
+                    <div class="coupon-row">
+                        <span class="coupon-label"><i class="fa-solid fa-list-ol"></i> Événements :</span>
+                        <span class="coupon-value value-events">${coupon.eventsCount}</span>
+                    </div>
+                    <div class="coupon-row">
+                        <span class="coupon-label"><i class="fa-solid fa-trophy"></i> Compétitions :</span>
+                        <span class="coupon-value">${coupon.competitions}</span>
+                    </div>
+                    <div class="coupon-row">
+                        <span class="coupon-label"><i class="fa-solid fa-chart-line"></i> Taux de fiabilité :</span>
+                        <span class="coupon-value value-fiability">${coupon.fiability}</span>
+                    </div>
+                    <div class="coupon-row">
+                        <span class="coupon-label"><i class="fa-solid fa-arrow-up-right-dots"></i> Cote globale :</span>
+                        <span class="coupon-value value-odds">${coupon.odds}</span>
+                    </div>
+                    <div class="coupon-row">
+                        <span class="coupon-label"><i class="fa-solid fa-tags"></i> Prix :</span>
+                        <span class="coupon-value value-price" style="color: ${isFree ? '#f43f5e' : 'var(--accent-green)'}">${coupon.price}</span>
+                    </div>
+                    <div class="coupon-row">
+                        <span class="coupon-label"><i class="fa-regular fa-clock"></i> Fin du coupon :</span>
+                        <span class="coupon-value">${coupon.endTime}</span>
+                    </div>
+                    <div class="coupon-footer">
+                        <button class="action-btn ${!isFree ? 'pay-btn' : ''}" onclick="openModal(${index})">
+                            <i class="fa-solid ${isFree ? 'fa-eye' : 'fa-cart-shopping'}"></i> 
+                            ${isFree ? 'Voir la combinaison' : 'Acheter ce coupon'}
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        const modal = document.getElementById('combinationModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalBody = document.getElementById('modalBody');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+
+        function openModal(index) {
+            const coupon = globalCouponsData[index];
+            if(!coupon) return;
+            const isFree = coupon.price.toLowerCase() === 'gratuit';
+
+            modalTitle.innerText = `${coupon.badgeLabel} (${coupon.id})`;
+            modalBody.innerHTML = "";
+
+            if(!isFree) {
+                modalBody.innerHTML = `
+                    <div style="text-align:center; padding: 20px 10px; color: var(--text-links);">
+                        <i class="fa-solid fa-lock" style="font-size: 3em; color: var(--accent-gold); margin-bottom: 15px;"></i>
+                        <p style="font-weight:600; font-size: 1.1em; margin-bottom: 8px; color: white;">Prix du coupon : <span style="color: var(--accent-green);">${coupon.price}</span></p>
+                        <p style="font-size:0.9em; margin-bottom: 20px;">Achetez ce coupon sécurisé pour débloquer immédiatement l'accès complet à cette combinaison IA ultra-fiable.</p>
+                        
+                        <button class="action-btn" style="background: var(--accent-green); padding: 12px; font-size: 1em;" onclick="alert('Redirection vers la passerelle de paiement Mobile Money / Carte...')">
+                            <i class="fa-solid fa-money-bill-transfer"></i> Procéder au paiement
+                        </button>
+                    </div>
+                `;
+            } else {
+                coupon.matches.forEach(m => {
+                    const row = document.createElement('div');
+                    row.className = 'match-item-row';
+                    row.innerHTML = `
+                        <div class="match-teams">${m.teams}</div>
+                        <div class="match-bet-container">
+                            <span class="match-prediction"><i class="fa-solid fa-circle-check"></i> Prono : ${m.prediction}</span>
+                            <span class="match-odd-badge">Cote : ${m.odd}</span>
+                        </div>
+                    `;
+                    modalBody.appendChild(row);
+                });
+            }
+            modal.classList.add('show');
+        }
+
+        closeModalBtn.addEventListener('click', () => modal.classList.remove('show'));
+        window.addEventListener('click', (e) => { if(e.target === modal) modal.classList.remove('show'); });
+        window.addEventListener('DOMContentLoaded', loadCouponsData);
+
+        const burgerBtn = document.getElementById('burgerToggle');
+        const sidebar = document.getElementById('sidebarMenu');
+        const overlay = document.getElementById('menuOverlay');
+        burgerBtn.addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('show'); });
+        overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('show'); });
+    </script>
+</body>
+</html>
